@@ -2,6 +2,17 @@
 
 All notable changes to tvscreener.
 
+## [0.5.0] - 15/09/2026
+
+### Fixed
+
+- **`Rating.find()` now classifies boundary values correctly** (#57)
+  - `0.5` maps to Buy instead of Strong Buy
+  - `0.1` maps to Neutral instead of Buy
+  - Rating bands no longer overlap at their boundaries
+
+---
+
 ## [0.4.1] - 2026
 
 ### Fixed
