@@ -477,13 +477,40 @@ class Rating(Enum):
         self.label = label
 
     def __contains__(self, item):
-        return self.min <= item <= self.max
+        """
+        Test whether a value falls in this band.
+
+        Every band is open at the edge facing NEUTRAL, and NEUTRAL itself is
+        closed on both ends, which is what TradingView specifies:
+
+            [-1.0 <= value <  -0.5]  Strong Sell
+            [-0.5 <= value <  -0.1]  Sell
+            [-0.1 <= value <=  0.1]  Neutral
+            ( 0.1 <  value <=  0.5]  Buy
+            ( 0.5 <  value <=  1.0]  Strong Buy
+
+        Closing both ends would make the bands overlap, and a value sitting
+        exactly on a cut point would resolve to the more bullish band.
+        Values outside [-1.0, 1.0] belong to no band, so find() reports them
+        as UNKNOWN.
+        """
+        if self is Rating.NEUTRAL:
+            return self.min <= item <= self.max
+        if self is Rating.BUY or self is Rating.STRONG_BUY:
+            return self.min < item <= self.max
+        return self.min <= item < self.max
 
     def range(self):
         return [self.min, self.max]
 
     @classmethod
     def find(cls, value: float):
+        """
+        Return the band a value belongs to, or UNKNOWN if it belongs to none.
+
+        :param value: Rating value, normally within [-1.0, 1.0]
+        :return: Matching Rating member, or Rating.UNKNOWN
+        """
         if value is not None:
             for rating in Rating:
                 if value in rating:
